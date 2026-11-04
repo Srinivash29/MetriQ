@@ -734,6 +734,113 @@ def new_application():
     finally:
         cursor.close()
         connection.close()
+@app.route("/inspections")
+@login_required
+def inspections():
+    if session.get("role") not in ["lmo", "gatc"]:
+        return "Access denied: LMO/GATC users only.", 403
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT
+                a.application_id,
+                a.application_type,
+                a.application_date,
+                a.preferred_date,
+                a.status,
+                u.full_name AS applicant_name,
+                i.instrument_name,
+                i.serial_number
+            FROM applications a
+            JOIN users u ON a.user_id = u.user_id
+            JOIN instruments i ON a.instrument_id = i.instrument_id
+            ORDER BY a.application_id DESC
+        """)
+
+        application_list = cursor.fetchall()
+
+        return render_template(
+            "inspections.html",
+            applications=application_list
+        )
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@app.route("/inspections/<int:application_id>", methods=["GET", "POST"])
+@login_required
+def record_inspection(application_id):
+    if session.get("role") not in ["lmo", "gatc"]:
+        return "Access denied: LMO/GATC users only.", 403
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT
+                a.application_id,
+                a.application_type,
+                a.status,
+                u.full_name AS applicant_name,
+                i.instrument_name,
+                i.serial_number
+            FROM applications a
+            JOIN users u ON a.user_id = u.user_id
+            JOIN instruments i ON a.instrument_id = i.instrument_id
+            WHERE a.application_id = %s
+        """, (application_id,))
+
+        application = cursor.fetchone()
+
+        if not application:
+            return "Application not found.", 404
+
+        if request.method == "POST":
+            inspection_date = request.form.get("inspection_date", "").strip()
+            inspection_result = request.form.get("inspection_result", "").strip()
+            observations = request.form.get("observations", "").strip()
+
+            allowed_results = ["passed", "failed", "pending"]
+
+            if not inspection_date or inspection_result not in allowed_results:
+                flash("Please enter a valid date and inspection result.", "error")
+                return redirect(url_for(
+                    "record_inspection",
+                    application_id=application_id
+                ))
+
+            cursor.execute("""
+                INSERT INTO inspections
+                (application_id, inspector_id, inspection_date,
+                 inspection_result, observations)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (
+                application_id,
+                session["user_id"],
+                inspection_date,
+                inspection_result,
+                observations
+            ))
+
+            connection.commit()
+
+            flash("Inspection record saved successfully!", "success")
+            return redirect(url_for("inspections"))
+
+        return render_template(
+            "record_inspection.html",
+            application=application
+        )
+
+    finally:
+        cursor.close()
+        connection.close()
 # -------------------------------
 # RUN APPLICATION
 # -------------------------------

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Management - MetriQ</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <div class="logo">MetriQ</div>
+    <p>Inspection Management</p>
+</header>
+
+<main>
+    <h1>Verification Applications</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    {% if applications %}
+    <table border="1" cellpadding="10">
+        <tr>
+            <th>Application ID</th>
+            <th>Applicant</th>
+            <th>Instrument</th>
+            <th>Serial Number</th>
+            <th>Application Type</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+
+        {% for item in applications %}
+        <tr>
+            <td>{{ item.application_id }}</td>
+            <td>{{ item.applicant_name }}</td>
+            <td>{{ item.instrument_name }}</td>
+            <td>{{ item.serial_number }}</td>
+            <td>{{ item.application_type }}</td>
+            <td>{{ item.status }}</td>
+            <td>
+                <a href="{{ url_for(
+                    'record_inspection',
+                    application_id=item.application_id
+                ) }}">Record Inspection</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p>No applications are available.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</main>
+
+</body>
+</html>

@@ -56,7 +56,19 @@
                     My Applications
                 </a>
             </div>
+            {% if role in ['lmo', 'gatc'] %}
 
+            <div class="feature-card">
+                <h3>Inspection Management</h3>
+
+                <p>Review applications and record instrument inspections.</p>
+
+                <a href="{{ url_for('inspections') }}" class="btn">
+                    Manage Inspections
+                </a>
+            </div>
+
+            {% endif %}
             <div class="feature-card">
                 <h3>Digital Certificates</h3>
                 <p>Access verification certificates.</p>
