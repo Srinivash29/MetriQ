@@ -274,6 +274,349 @@ def logout():
     return redirect(url_for("home"))
 
 
+# =====================================
+# STEP 5 - INSTRUMENT MANAGEMENT
+# =====================================
+
+
+# VIEW ALL INSTRUMENTS
+@app.route("/instruments")
+@login_required
+def instruments():
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        query = """
+            SELECT *
+            FROM instruments
+            WHERE user_id = %s
+            ORDER BY instrument_id DESC
+        """
+
+        cursor.execute(query, (session["user_id"],))
+        instrument_list = cursor.fetchall()
+
+        return render_template(
+            "instruments.html",
+            instruments=instrument_list
+        )
+
+    except Exception:
+        app.logger.exception("Unable to load instruments")
+        flash("Unable to load instruments.", "danger")
+        return redirect(url_for("dashboard"))
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+
+# ADD NEW INSTRUMENT
+@app.route("/instruments/add", methods=["GET", "POST"])
+@login_required
+def add_instrument():
+
+    if request.method == "POST":
+
+        instrument_name = request.form.get(
+            "instrument_name", ""
+        ).strip()
+
+        instrument_type = request.form.get(
+            "instrument_type", ""
+        ).strip()
+
+        manufacturer = request.form.get(
+            "manufacturer", ""
+        ).strip()
+
+        model_number = request.form.get(
+            "model_number", ""
+        ).strip()
+
+        serial_number = request.form.get(
+            "serial_number", ""
+        ).strip()
+
+        location = request.form.get(
+            "location", ""
+        ).strip()
+
+        if not all([
+            instrument_name,
+            instrument_type,
+            serial_number
+        ]):
+            flash("Please fill all required fields.", "danger")
+            return redirect(url_for("add_instrument"))
+
+        if (
+            len(instrument_name) > 100
+            or len(instrument_type) > 100
+            or len(manufacturer) > 100
+            or len(model_number) > 100
+            or len(serial_number) > 100
+            or len(location) > 255
+        ):
+            flash("One or more fields exceed the allowed length.", "danger")
+            return redirect(url_for("add_instrument"))
+
+        connection = None
+        cursor = None
+
+        try:
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            query = """
+                INSERT INTO instruments (
+                    user_id,
+                    instrument_name,
+                    instrument_type,
+                    manufacturer,
+                    model_number,
+                    serial_number,
+                    location
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+
+            cursor.execute(
+                query,
+                (
+                    session["user_id"],
+                    instrument_name,
+                    instrument_type,
+                    manufacturer or None,
+                    model_number or None,
+                    serial_number,
+                    location or None
+                )
+            )
+
+            connection.commit()
+
+            flash("Instrument registered successfully!", "success")
+
+            return redirect(url_for("instruments"))
+
+        except Exception as error:
+
+            if connection:
+                connection.rollback()
+
+            if getattr(error, "errno", None) == 1062:
+                flash("This serial number is already registered.", "danger")
+            else:
+                app.logger.exception("Instrument registration failed")
+                flash("Unable to register instrument.", "danger")
+
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+    return render_template("add_instrument.html")
+
+
+# EDIT INSTRUMENT
+@app.route(
+    "/instruments/edit/<int:instrument_id>",
+    methods=["GET", "POST"]
+)
+@login_required
+def edit_instrument(instrument_id):
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM instruments
+            WHERE instrument_id = %s AND user_id = %s
+            """,
+            (instrument_id, session["user_id"])
+        )
+
+        instrument = cursor.fetchone()
+
+        if not instrument:
+            flash("Instrument not found or access denied.", "danger")
+            return redirect(url_for("instruments"))
+
+        if request.method == "POST":
+
+            instrument_name = request.form.get(
+                "instrument_name", ""
+            ).strip()
+
+            instrument_type = request.form.get(
+                "instrument_type", ""
+            ).strip()
+
+            manufacturer = request.form.get(
+                "manufacturer", ""
+            ).strip()
+
+            model_number = request.form.get(
+                "model_number", ""
+            ).strip()
+
+            serial_number = request.form.get(
+                "serial_number", ""
+            ).strip()
+
+            location = request.form.get(
+                "location", ""
+            ).strip()
+
+            if not all([
+                instrument_name,
+                instrument_type,
+                serial_number
+            ]):
+                flash("Please fill all required fields.", "danger")
+
+                return render_template(
+                    "edit_instrument.html",
+                    instrument=instrument
+                )
+
+            if (
+                len(instrument_name) > 100
+                or len(instrument_type) > 100
+                or len(manufacturer) > 100
+                or len(model_number) > 100
+                or len(serial_number) > 100
+                or len(location) > 255
+            ):
+                flash("One or more fields exceed the allowed length.", "danger")
+
+                return render_template(
+                    "edit_instrument.html",
+                    instrument=instrument
+                )
+
+            update_query = """
+                UPDATE instruments
+                SET instrument_name = %s,
+                    instrument_type = %s,
+                    manufacturer = %s,
+                    model_number = %s,
+                    serial_number = %s,
+                    location = %s
+                WHERE instrument_id = %s AND user_id = %s
+            """
+
+            cursor.execute(
+                update_query,
+                (
+                    instrument_name,
+                    instrument_type,
+                    manufacturer or None,
+                    model_number or None,
+                    serial_number,
+                    location or None,
+                    instrument_id,
+                    session["user_id"]
+                )
+            )
+
+            connection.commit()
+
+            flash("Instrument updated successfully!", "success")
+
+            return redirect(url_for("instruments"))
+
+        return render_template(
+            "edit_instrument.html",
+            instrument=instrument
+        )
+
+    except Exception as error:
+
+        if connection:
+            connection.rollback()
+
+        if getattr(error, "errno", None) == 1062:
+            flash("This serial number is already registered.", "danger")
+        else:
+            app.logger.exception("Instrument update failed")
+            flash("Unable to update instrument.", "danger")
+
+        return redirect(url_for("instruments"))
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+
+# DELETE INSTRUMENT
+@app.route(
+    "/instruments/delete/<int:instrument_id>",
+    methods=["POST"]
+)
+@login_required
+def delete_instrument(instrument_id):
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        cursor.execute(
+            """
+            DELETE FROM instruments
+            WHERE instrument_id = %s AND user_id = %s
+            """,
+            (instrument_id, session["user_id"])
+        )
+
+        if cursor.rowcount == 0:
+            flash("Instrument not found or access denied.", "danger")
+        else:
+            connection.commit()
+            flash("Instrument deleted successfully!", "success")
+
+    except Exception as error:
+
+        if connection:
+            connection.rollback()
+
+        if getattr(error, "errno", None) == 1451:
+            flash(
+                "This instrument is linked to an application and cannot be deleted.",
+                "warning"
+            )
+        else:
+            app.logger.exception("Instrument deletion failed")
+            flash("Unable to delete instrument.", "danger")
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+    return redirect(url_for("instruments"))
+
 # -------------------------------
 # RUN APPLICATION
 # -------------------------------

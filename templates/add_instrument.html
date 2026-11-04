@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetriQ - Add Instrument</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <div class="logo">MetriQ</div>
+    <p>Register Your Instrument</p>
+</header>
+
+<main>
+    <section class="form-card">
+
+        <h1>Add New Instrument</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p class="message {{ category }}">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST">
+
+            <input type="hidden" name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <label>Instrument Name *</label>
+            <input type="text" name="instrument_name"
+                   maxlength="100" required>
+
+            <label>Instrument Type *</label>
+            <select name="instrument_type" required>
+                <option value="">Select Instrument Type</option>
+                <option value="Weighing Scale">Weighing Scale</option>
+                <option value="Electronic Balance">Electronic Balance</option>
+                <option value="Fuel Dispenser">Fuel Dispenser</option>
+                <option value="Flow Meter">Flow Meter</option>
+                <option value="Measuring Instrument">Measuring Instrument</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label>Manufacturer</label>
+            <input type="text" name="manufacturer" maxlength="100">
+
+            <label>Model Number</label>
+            <input type="text" name="model_number" maxlength="100">
+
+            <label>Serial Number *</label>
+            <input type="text" name="serial_number"
+                   maxlength="100" required>
+
+            <label>Instrument Location</label>
+            <input type="text" name="location" maxlength="255">
+
+            <button type="submit">Register Instrument</button>
+
+        </form>
+
+        <p class="bottom-text">
+            <a href="{{ url_for('instruments') }}">
+                Back to My Instruments
+            </a>
+        </p>
+
+    </section>
+</main>
+
+</body>
+</html>

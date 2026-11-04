@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetriQ - Edit Instrument</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <div class="logo">MetriQ</div>
+    <p>Update Instrument Details</p>
+</header>
+
+<main>
+    <section class="form-card">
+
+        <h1>Edit Instrument</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p class="message {{ category }}">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST">
+
+            <input type="hidden" name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <label>Instrument Name *</label>
+            <input type="text" name="instrument_name"
+                   value="{{ instrument.instrument_name }}"
+                   maxlength="100" required>
+
+            <label>Instrument Type *</label>
+            <select name="instrument_type" required>
+                {% for type in [
+                    'Weighing Scale',
+                    'Electronic Balance',
+                    'Fuel Dispenser',
+                    'Flow Meter',
+                    'Measuring Instrument',
+                    'Other'
+                ] %}
+                    <option value="{{ type }}"
+                        {% if instrument.instrument_type == type %}
+                            selected
+                        {% endif %}>
+                        {{ type }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label>Manufacturer</label>
+            <input type="text" name="manufacturer"
+                   value="{{ instrument.manufacturer or '' }}"
+                   maxlength="100">
+
+            <label>Model Number</label>
+            <input type="text" name="model_number"
+                   value="{{ instrument.model_number or '' }}"
+                   maxlength="100">
+
+            <label>Serial Number *</label>
+            <input type="text" name="serial_number"
+                   value="{{ instrument.serial_number }}"
+                   maxlength="100" required>
+
+            <label>Instrument Location</label>
+            <input type="text" name="location"
+                   value="{{ instrument.location or '' }}"
+                   maxlength="255">
+
+            <button type="submit">Update Instrument</button>
+
+        </form>
+
+        <p class="bottom-text">
+            <a href="{{ url_for('instruments') }}">
+                Cancel
+            </a>
+        </p>
+
+    </section>
+</main>
+
+</body>
+</html>
