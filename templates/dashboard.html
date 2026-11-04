@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetriQ - Dashboard</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <div class="logo">MetriQ</div>
+    <p>Digital Verification Dashboard</p>
+</header>
+
+<main>
+    <section class="welcome">
+
+        <h1>Welcome, {{ full_name }}!</h1>
+
+        <p>You have successfully logged into MetriQ.</p>
+
+        <div class="dashboard-card">
+            <h2>Account Information</h2>
+
+            <p><strong>Name:</strong> {{ full_name }}</p>
+
+            <p><strong>Role:</strong> {{ role|upper }}</p>
+
+            <p><strong>Status:</strong> Logged In</p>
+        </div>
+
+        <h2>MetriQ Services</h2>
+
+        <div class="features">
+
+            <div class="feature-card">
+                <h3>Instrument Management</h3>
+                <p>Manage instrument details.</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Verification Applications</h3>
+                <p>Submit and track applications.</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Digital Certificates</h3>
+                <p>Access verification certificates.</p>
+            </div>
+
+        </div>
+
+        <form method="POST" action="{{ url_for('logout') }}">
+            <input type="hidden" name="csrf_token"
+                   value="{{ csrf_token() }}">
+            <button type="submit">Logout</button>
+        </form>
+
+    </section>
+</main>
+
+<footer>
+    MetriQ © 2026 | Team PANDAS
+</footer>
+
+</body>
+</html>

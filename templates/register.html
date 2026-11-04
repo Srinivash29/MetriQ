@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetriQ - Registration</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header>
+    <div class="logo">MetriQ</div>
+    <p>Create your applicant account</p>
+</header>
+
+<main>
+    <section class="form-card">
+        <h1>User Registration</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p class="message {{ category }}">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('register') }}">
+
+            <input type="hidden" name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <label>Full Name *</label>
+            <input type="text" name="full_name"
+                   maxlength="100" required>
+
+            <label>Email Address *</label>
+            <input type="email" name="email"
+                   maxlength="150" required>
+
+            <label>Phone Number</label>
+            <input type="tel" name="phone" maxlength="15">
+
+            <label>Password *</label>
+            <input type="password" name="password"
+                   minlength="8" required>
+
+            <label>Confirm Password *</label>
+            <input type="password" name="confirm_password"
+                   minlength="8" required>
+
+            <button type="submit">Create Account</button>
+
+        </form>
+
+        <p class="bottom-text">
+            Already registered?
+            <a href="{{ url_for('login') }}">Login here</a>
+        </p>
+    </section>
+</main>
+
+</body>
+</html>

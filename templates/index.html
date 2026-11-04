@@ -4,61 +4,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>MetriQ | Digital Verification System</title>
-
+    <title>MetriQ - Home</title>
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-
 <body>
 
-    <header>
-        <div class="logo">MetriQ</div>
-        <p>Smart Digital Verification and Certification System</p>
-    </header>
+<header>
+    <div class="logo">MetriQ</div>
+    <p>Smart Digital Verification and Certification System</p>
+</header>
 
-    <main>
-        <section class="welcome">
-            <h1>Welcome to MetriQ</h1>
+<main>
+    <section class="welcome">
+        <h1>Welcome to MetriQ</h1>
 
-            <p>
-                A digital platform for managing instrument
-                verification and certification.
-            </p>
+        <p>
+            Manage instrument verification and certification
+            through a digital platform.
+        </p>
 
-            <button onclick="showMessage()">
-                Get Started
-            </button>
-        </section>
+        <div class="actions">
+            <a href="{{ url_for('register') }}" class="btn">
+                Register
+            </a>
 
-        <section class="features">
-            <div class="feature-card">
-                <h2>Online Application</h2>
-                <p>Submit verification applications digitally.</p>
-            </div>
+            <a href="{{ url_for('login') }}" class="btn secondary">
+                Login
+            </a>
+        </div>
+    </section>
+</main>
 
-            <div class="feature-card">
-                <h2>Verification Tracking</h2>
-                <p>Track your instrument verification status.</p>
-            </div>
-
-            <div class="feature-card">
-                <h2>Digital Certificate</h2>
-                <p>Access digital verification certificates.</p>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <p>MetriQ © 2026 | Team PANDAS</p>
-    </footer>
-
-    <script>
-        function showMessage() {
-            alert("Welcome to MetriQ! Development started successfully.");
-        }
-    </script>
+<footer>
+    MetriQ © 2026 | Team PANDAS
+</footer>
 
 </body>
 </html>
