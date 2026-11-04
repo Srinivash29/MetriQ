@@ -616,7 +616,124 @@ def delete_instrument(instrument_id):
             connection.close()
 
     return redirect(url_for("instruments"))
+@app.route("/applications")
+@login_required
+def applications():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
 
+    try:
+        cursor.execute("""
+            SELECT
+                a.application_id,
+                a.application_type,
+                a.application_date,
+                a.preferred_date,
+                a.status,
+                a.remarks,
+                i.instrument_name,
+                i.serial_number
+            FROM applications a
+            JOIN instruments i
+                ON a.instrument_id = i.instrument_id
+            WHERE a.user_id = %s
+            ORDER BY a.application_id DESC
+        """, (session["user_id"],))
+
+        application_list = cursor.fetchall()
+
+        return render_template(
+            "applications.html",
+            applications=application_list
+        )
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@app.route("/applications/new", methods=["GET", "POST"])
+@login_required
+def new_application():
+    application_types = [
+        "Initial Verification",
+        "Periodic Verification",
+        "Re-verification"
+    ]
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT instrument_id, instrument_name, serial_number
+            FROM instruments
+            WHERE user_id = %s
+            ORDER BY instrument_id DESC
+        """, (session["user_id"],))
+
+        instrument_list = cursor.fetchall()
+
+        if request.method == "POST":
+            instrument_id = request.form.get("instrument_id")
+            application_type = request.form.get("application_type")
+            preferred_date = request.form.get("preferred_date") or None
+            remarks = request.form.get("remarks", "").strip()
+
+            if not instrument_id or application_type not in application_types:
+                flash("Please select a valid instrument and application type.", "error")
+                return render_template(
+                    "new_application.html",
+                    instruments=instrument_list,
+                    application_types=application_types
+                )
+
+            try:
+                instrument_id = int(instrument_id)
+            except ValueError:
+                flash("Invalid instrument selected.", "error")
+                return render_template(
+                    "new_application.html",
+                    instruments=instrument_list,
+                    application_types=application_types
+                )
+
+            # Confirm that this instrument belongs to the logged-in user.
+            cursor.execute("""
+                SELECT instrument_id
+                FROM instruments
+                WHERE instrument_id = %s AND user_id = %s
+            """, (instrument_id, session["user_id"]))
+
+            if not cursor.fetchone():
+                flash("You can only apply for your own instruments.", "error")
+                return redirect(url_for("new_application"))
+
+            cursor.execute("""
+                INSERT INTO applications
+                (user_id, instrument_id, application_type,
+                 preferred_date, remarks)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (
+                session["user_id"],
+                instrument_id,
+                application_type,
+                preferred_date,
+                remarks
+            ))
+
+            connection.commit()
+            flash("Application submitted successfully!", "success")
+            return redirect(url_for("applications"))
+
+        return render_template(
+            "new_application.html",
+            instruments=instrument_list,
+            application_types=application_types
+        )
+
+    finally:
+        cursor.close()
+        connection.close()
 # -------------------------------
 # RUN APPLICATION
 # -------------------------------

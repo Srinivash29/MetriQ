@@ -35,23 +35,26 @@
         <h2>MetriQ Services</h2>
 
         <div class="features">
+
             <div class="feature-card">
                 <h3>My Instruments</h3>
                 <p>Register and manage your instruments.</p>
-
                 <a href="{{ url_for('instruments') }}" class="btn">
                     Manage Instruments
                 </a>
             </div>
 
             <div class="feature-card">
-                <h3>Instrument Management</h3>
-                <p>Manage instrument details.</p>
-            </div>
-
-            <div class="feature-card">
                 <h3>Verification Applications</h3>
-                <p>Submit and track applications.</p>
+                <p>Submit and track verification applications.</p>
+
+                <a href="{{ url_for('new_application') }}" class="btn">
+                    Submit New Application
+                </a>
+
+                <a href="{{ url_for('applications') }}" class="btn">
+                    My Applications
+                </a>
             </div>
 
             <div class="feature-card">

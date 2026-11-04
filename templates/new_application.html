@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Application - MetriQ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>Submit Verification Application</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    {% if instruments %}
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label>Select Instrument</label>
+        <select name="instrument_id" required>
+            <option value="">Choose an instrument</option>
+            {% for instrument in instruments %}
+                <option value="{{ instrument.instrument_id }}">
+                    {{ instrument.instrument_name }} -
+                    {{ instrument.serial_number }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label>Application Type</label>
+        <select name="application_type" required>
+            <option value="">Choose application type</option>
+            {% for item in application_types %}
+                <option value="{{ item }}">{{ item }}</option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label>Preferred Inspection Date</label>
+        <input type="date" name="preferred_date">
+
+        <br><br>
+
+        <label>Remarks</label>
+        <textarea name="remarks" placeholder="Enter additional details"></textarea>
+
+        <br><br>
+
+        <button type="submit">Submit Application</button>
+    </form>
+    {% else %}
+        <p>You have not registered any instruments yet.</p>
+        <a href="{{ url_for('instruments') }}">Register an instrument</a>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</body>
+</html>

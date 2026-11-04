@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Applications - MetriQ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>My Verification Applications</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <a href="{{ url_for('new_application') }}">Submit New Application</a>
+
+    {% if applications %}
+    <table border="1" cellpadding="10">
+        <tr>
+            <th>Application ID</th>
+            <th>Instrument</th>
+            <th>Serial Number</th>
+            <th>Application Type</th>
+            <th>Submitted Date</th>
+            <th>Preferred Date</th>
+            <th>Status</th>
+            <th>Remarks</th>
+        </tr>
+
+        {% for item in applications %}
+        <tr>
+            <td>{{ item.application_id }}</td>
+            <td>{{ item.instrument_name }}</td>
+            <td>{{ item.serial_number }}</td>
+            <td>{{ item.application_type }}</td>
+            <td>{{ item.application_date }}</td>
+            <td>{{ item.preferred_date or "Not specified" }}</td>
+            <td>{{ item.status }}</td>
+            <td>{{ item.remarks or "-" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p>You have not submitted any applications yet.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</body>
+</html>
